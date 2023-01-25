@@ -13,25 +13,29 @@ public class TemperatureDevice extends Thread {
 	}
 	
 	public void run() {
-		
+
 		System.out.println("temperature device started");
-		
+
+
 		for (int i = 0; i<COUNT;i++) {
-			
-				int temp = sn.read();
-				System.out.println("READING: " + temp);
-				
+
+			int temp = sn.read();
+			System.out.println("READING: " + temp);
+
+			synchronized(tm) {
 				tm.setTemperature(temp);
-
-				try {
-					Thread.sleep(1000);
-				} catch (Exception e) {
-					e.printStackTrace();
-				}
-
+				tm.notifyAll();
 			}
-	
+
+			try {
+				Thread.sleep(1000);
+			} catch (Exception e) {
+				e.printStackTrace();
+			}
+
+		}
+
 		System.out.println("Temperature device stopping ... ");
-		
+
 	}
 }

@@ -22,11 +22,14 @@ public class DisplayDevice extends Thread {
 			
 			System.out.println("DISPLAY: " + temp);
 			
-			try {
-				Thread.sleep(1000);
-			} catch (Exception e) {
-				e.printStackTrace();
+			synchronized (tm) {
+				try {
+					tm.wait();
+				} catch (InterruptedException e) {
+					
+				}
 			}
+			
 			
 		}
 		
