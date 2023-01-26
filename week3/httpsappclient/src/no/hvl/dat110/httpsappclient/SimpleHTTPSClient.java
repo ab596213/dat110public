@@ -36,6 +36,9 @@ public class SimpleHTTPSClient {
 		scanner.close();
 		
 		con.disconnect();
+		
+		// https://dweet.io/dweet/for/berget?muskler=stor&kjekk=ja
+		// https://dweet.io/get/latest/dweet/for/berget
 	}
 
 }
