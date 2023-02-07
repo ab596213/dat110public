@@ -3,7 +3,7 @@ package no.hvl.dat110.crack;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 
-import javax.xml.bind.DatatypeConverter;
+/* ADRIAN--------- import javax.xml.bind.DatatypeConverter; */
 
 public class PasswordUtility {
 	
@@ -19,7 +19,7 @@ public class PasswordUtility {
 		md.update(passbytes);											// pass the password to the hash function
 		byte[] passhash = md.digest();									// obtain the hash value of the password
 		
-		String hexOfHash = DatatypeConverter.printHexBinary(passhash); 	// convert into hex value
+		String hexOfHash = "hei"; /* ADRIAN -----DatatypeConverter.printHexBinary(passhash); */ 	// convert into hex value
 		
 		return hexOfHash;
 		

@@ -16,11 +16,20 @@ public class TempSensorImpl extends UnicastRemoteObject implements TempSensorInt
 	 */
 	private static final long serialVersionUID = 1L;
 	
+	private String temp;
+	
 	public TempSensorImpl() throws RemoteException {
 		super();
 	}
 	
-	// TODO
-	// implement the remote methods defined in the interface here
+	@Override
+	public String getTemperature() throws RemoteException{
+		return temp;
+	}
+	
+	@Override
+	public void setTemperature(String temp) throws RemoteException{
+		this.temp = temp;
+	}
 
 }
