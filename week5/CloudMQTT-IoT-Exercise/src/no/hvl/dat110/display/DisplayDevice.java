@@ -1,5 +1,8 @@
 package no.hvl.dat110.display;
 
+import org.eclipse.paho.client.mqttv3.MqttException;
+
+import no.hvl.dat110.mqtt.brokerclient.MQTTSubClient;
 
 public class DisplayDevice extends Thread {
 		
@@ -15,7 +18,15 @@ public class DisplayDevice extends Thread {
 		// use the sub instance to get the temperature
 		
 		// Do the display in the MQTTSubClient
-
+		try {
+			MQTTSubClient sc = new MQTTSubClient();
+			
+			
+			
+		} catch (MqttException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
 		
 		throw new RuntimeException("DisplayDevice Client Not yet implemented...");
 		
