@@ -10,12 +10,12 @@ import java.rmi.registry.Registry;
 import java.util.Random;
 
 import no.hvl.dat110.rmiinterface.ClientCallbackInterface;
-import no.hvl.dat110.rmiinterface.ServerMainInterface;
+import no.hvl.dat110.rmiinterface.ServerCallbackInterface;
 
 
-public class ComputeClient {
+public class ComputeClient extends Thread {
 	
-	public static void main(String args[]) {
+	public void run() {
 		
 		try {
 			
@@ -27,39 +27,26 @@ public class ComputeClient {
 			Registry registry = LocateRegistry.getRegistry(9010);
 			
 			// Look up the registry for the remote ServerCallback object
-			ServerMainInterface sc = (ServerMainInterface) registry.lookup(ServerMainInterface.SERVER_INAME);
+			ServerCallbackInterface sc = (ServerCallbackInterface) registry.lookup(ServerCallbackInterface.SERVER_INAME);
 			
 			// register the clientcallback object with the remote servercallback object
 			ClientCallbackInterface clientcallbackobj = new ClientCallbackImplement();
 			
 			sc.registerClientCallbackObject(clientcallbackobj);  // register a callback handler for the client on the server
 				
-			// hand the remote operation to this thread to wait for the result from server		
-			Runnable runnable = () -> {
-				try { 
-					System.out.println("Computing: "+a+" + "+b);
-					sc.doOperation(a, b);
-				 }catch (RemoteException e) { 
-					 e.printStackTrace(); 
-				 } 
-			};
-			Thread thread = new Thread(runnable);
-			thread.start();
-			 
-			// continue with other things until this client is notified of the result from the server
-			while(!clientcallbackobj.isNotified()) {
-				Thread.sleep(1000);
-				System.out.println("RPC Client still busy with other things while waiting for result...");
+			sc.doOperation(a, b);									// remote
+
+			while(!clientcallbackobj.isNotified()) {	// keep writing until server returns result
+				System.out.println("Waiting for server but doing something else...");
+				Thread.sleep(2000);
 			}
 			
-			System.out.println("Operation completed! Client will terminate server in 2 sec...");
-			
-			Thread.sleep(2000);
-			
-			sc.shutdown();	
+			System.out.println("Operation completed! Client will terminate...");
+			System.exit(0);
 
 		} catch(Exception e) {
-			System.exit(0);
+			System.err.println("Error in RMI "+e.getMessage());
+			e.getStackTrace();
 		}
 	}
 

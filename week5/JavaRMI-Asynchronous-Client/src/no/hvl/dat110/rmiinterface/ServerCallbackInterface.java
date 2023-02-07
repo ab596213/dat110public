@@ -3,7 +3,7 @@ package no.hvl.dat110.rmiinterface;
 import java.rmi.Remote;
 import java.rmi.RemoteException;
 
-public interface ServerMainInterface extends Remote {
+public interface ServerCallbackInterface extends Remote {
 	
 	public static final String SERVER_INAME = "SInterface";
 	/**

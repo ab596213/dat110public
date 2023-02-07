@@ -8,24 +8,28 @@ package no.hvl.dat110.rmiserver;
 import java.rmi.registry.LocateRegistry;
 import java.rmi.registry.Registry;
 
-import no.hvl.dat110.rmiinterface.ServerMainInterface;
+import no.hvl.dat110.rmiinterface.ServerCallbackInterface;
 
 
 public class ComputeServer {
 	
 	public static void main(String args[]) {
 
-		
+		//ComputeServer cs = new ComputeServer();
+		//cs.start();
+	}
+	
+	public void start () {
 		try {
 			
 			// start the registry
 			Registry registry = LocateRegistry.createRegistry(9010);
 					
 			// Make a new instance of the implementation class/callback class
-			ServerMainInterface serverstub = new ServerMainImplement();
+			ServerCallbackInterface serverstub = new ServerCallbackImplement();
 			
 			// bind the remote object (stub) in the registry
-			registry.bind(ServerMainInterface.SERVER_INAME, serverstub);
+			registry.bind(ServerCallbackInterface.SERVER_INAME, serverstub);
 			
 			System.out.println("RPC ComputeServer is running...");
 		}catch(Exception e) {
