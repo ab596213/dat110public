@@ -42,6 +42,7 @@ public class PassCrackImpl extends UnicastRemoteObject implements PassCrackInter
 				
 				// TODO
 				// call the bruteforce method that performs the actual search and pass the result into password
+				password = bruteforce(Utility.getKeyspace(), keylength, hashtocrack);
 				
 				long end = System.currentTimeMillis();
 				long diff = end - start;
@@ -49,13 +50,15 @@ public class PassCrackImpl extends UnicastRemoteObject implements PassCrackInter
 				if(!password.equals("")) {
 					// TODO
 					// call the foundPassword on workercallback to notify coordinator of the found password
+					workercallback.foundPassword(password, diff, workername);
 					// call shutdown on other workers
+					sendShutdownMessage(workername);
 					
 				}
 				
 				shutdownWorker(); 				// call shutdown on self
-			} catch (RemoteException e) {
-				e.printStackTrace();
+			} catch (RemoteException | NoSuchAlgorithmException n) {
+				n.printStackTrace();
 			}			
 		};
 		
@@ -71,12 +74,26 @@ public class PassCrackImpl extends UnicastRemoteObject implements PassCrackInter
 	 * @param hashtocrack
 	 * @throws NoSuchAlgorithmException 
 	 */
-	public String bruteforce(String[] keyspace, int keylength, String hashtocrack) {
+	public String bruteforce(String[] keyspace, int keylength, String hashtocrack) throws NoSuchAlgorithmException{
 
-		// TODO
-		// use the idea from the BruteForce.java to implement the search here...
+		Iterator<List<String>> keys = Generator.permutation(keyspace).withRepetitions(keylength).iterator();
 		
-		return "";
+		while(keys.hasNext()) {
+			List<String> key = keys.next();
+			
+			String skey = "";
+			for(int i=0; i<key.size(); i++) {
+				skey += key.get(i);
+			}
+
+			boolean found = PasswordUtility.verifyHash(skey, hashtocrack);
+			if(found) {
+				return skey;
+				
+			}
+		}
+
+		return "null";
 
 	}
 	
@@ -84,10 +101,12 @@ public class PassCrackImpl extends UnicastRemoteObject implements PassCrackInter
 	public void shutdownWorker() throws RemoteException {
 		
 		System.out.println("worker node will shut down in 1 sec...");
-		
-		// TODO (optional)
-		
-		// shutdown command
+		try {
+			Thread.sleep(1000);
+		} catch (InterruptedException e) {
+			e.printStackTrace();
+		}
+		System.exit(0);
 	}
 
 	@Override
@@ -98,12 +117,21 @@ public class PassCrackImpl extends UnicastRemoteObject implements PassCrackInter
 
 	private void sendShutdownMessage(String caller) {
 		
-		// TODO (optional)
-		
-		// get workers from Utility class
-		// iterate over the workers
-		// getWorkerstub from the Utility class
-		// call the remote "shutdownWorker method
+		Map<String, Integer> workers = Utility.getWorkers();
+		Iterator<String> workernodes = workers.keySet().iterator();
+		while(workernodes.hasNext()) {
+			String workername = workernodes.next();
+			if(workername.equals(caller))
+				continue;
+			int workerport = workers.get(workername);
+			try {
+				PassCrackInterface worker = Utility.getWorkerstub(workername, workerport);
+				if(worker != null)
+					worker.shutdownWorker();
+			} catch (Exception e) {
+				//e.printStackTrace();
+			}
+		}
 
 	}
 

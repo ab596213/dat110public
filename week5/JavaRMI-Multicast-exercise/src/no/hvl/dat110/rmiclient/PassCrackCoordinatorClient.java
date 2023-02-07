@@ -33,7 +33,7 @@ public class PassCrackCoordinatorClient {
 	
 	private void execute() throws NoSuchAlgorithmException, RemoteException {
 		
-		int[] jobspasswordlen = {6, 5}; 		// these are jobs that will be distributed to 2 workers
+		int[] jobspasswordlen = {5, 6}; 		// these are jobs that will be distributed to 2 workers
 		
 		// password = s0lbA
 		String hashofpassword = PasswordUtility.generateHashWithoutSalt("s0lbA");
@@ -53,17 +53,21 @@ public class PassCrackCoordinatorClient {
 			// TODO
 			
 			// retrieve the next worker and pass the message as the argument in the constructor
-
+			WorkerCallbackInterface workercallback = new WorkerCallbackImpl(message);
+			String workername = workernodes.next();
+			
 			// get the port of the registry on which the worker object is located
-
+			int workerport = workers.get(workername);
+			
 			// get a reference to the worker using the Utility class
+			PassCrackInterface worker = Utility.getWorkerstub(workername, workerport);
 			
 			// create an instance of the workercallbackimpl
 			
 			// register the workercallbackimpl on worker	
-			
+			worker.registerWorkerCallbackObject(workercallback);
 			// call the crackPassword remote method
-
+			worker.crackPassword(jobspasswordlen[i++], hashofpassword, workername);
 		}
 		
 		while(!message.isFound()) {
