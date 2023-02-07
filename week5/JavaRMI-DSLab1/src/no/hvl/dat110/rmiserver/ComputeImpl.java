@@ -1,6 +1,9 @@
 package no.hvl.dat110.rmiserver;
 
+import java.rmi.NotBoundException;
 import java.rmi.RemoteException;
+import java.rmi.registry.LocateRegistry;
+import java.rmi.registry.Registry;
 import java.rmi.server.UnicastRemoteObject;
 
 import no.hvl.dat110.rmiinterface.ComputeInterface;
@@ -36,5 +39,16 @@ public class ComputeImpl extends UnicastRemoteObject implements ComputeInterface
 		return sum;
 	}
 
-
+	public void stopServer() throws RemoteException {
+		
+    Registry reg = LocateRegistry.getRegistry(9000);
+        
+        try {
+            reg.unbind("ComputeInterface");
+            UnicastRemoteObject.unexportObject(this, true);
+            Thread.sleep(1000);
+        } catch (RemoteException | NotBoundException | InterruptedException e) {
+            e.printStackTrace();
+        }
+	}
 }
