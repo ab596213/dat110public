@@ -7,6 +7,7 @@ import static org.junit.jupiter.api.Assertions.*;
 
 import java.math.BigInteger;
 import java.rmi.RemoteException;
+import java.security.NoSuchAlgorithmException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
@@ -25,9 +26,10 @@ class FileManagerTest {
 
 	/**
 	 * Test method for {@link no.hvl.dat110.util.FileManager#createReplicaFiles(java.lang.String, int)}.
+	 * @throws NoSuchAlgorithmException 
 	 */
 	@Test
-	void testCreateReplicaFiles() {
+	void testCreateReplicaFiles() throws NoSuchAlgorithmException {
 		
 		String file1_txt = "file1.txt";
 		// actual BigInteger from implementation
@@ -47,9 +49,10 @@ class FileManagerTest {
 	/**
 	 * Test method for {@link no.hvl.dat110.util.FileManager#distributeReplicastoPeers(java.lang.String)}.
 	 * @throws RemoteException 
+	 * @throws NoSuchAlgorithmException 
 	 */
 	@Test
-	void testDistributeReplicastoPeers() throws RemoteException {
+	void testDistributeReplicastoPeers() throws RemoteException, NoSuchAlgorithmException {
 		
 		// expected: file1.txt will be distributed to process2 and process4
 		BigInteger[] process2_keys_expected = {new BigInteger("282451069880104095785105614328160380023"), new BigInteger("307182277615750537357932158175973126553")};

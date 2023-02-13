@@ -36,8 +36,11 @@ public class Util {
 		// if id = 9, then (6 < 9 <= 2) = true
 		
 		// Task: given an identifier, id: check whether pred < id <= node
-		
-		
+		BigInteger plus = new BigInteger("10");
+		BigInteger zero = new BigInteger("0");
+		if (id.compareTo(pred) > 0 && id.compareTo(node) <= 0) {
+			return true;
+		}
 		return false;
 	}
 	

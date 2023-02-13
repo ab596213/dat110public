@@ -33,7 +33,7 @@ public class Client {
 		});
 	}
 	
-	public static void distributeFiles(String[] files) throws RemoteException {
+	public static void distributeFiles(String[] files) throws RemoteException, NoSuchAlgorithmException {
 		
 		// use the filemanager to distribute each file to the processes		
 		FileManager fm = new FileManager();													// get the filemanager
@@ -80,7 +80,7 @@ public class Client {
 		}
 	}
 	
-	public static List<String> findPeersofFile(String filename) throws RemoteException {
+	public static List<String> findPeersofFile(String filename) throws RemoteException, NoSuchAlgorithmException {
 		
 		FileManager fm = new FileManager();													// get the filemanager
 		Set<NodeInterface> activepeers = fm.requestActiveNodesForFile(filename);

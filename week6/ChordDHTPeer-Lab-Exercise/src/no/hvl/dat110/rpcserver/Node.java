@@ -3,6 +3,7 @@ package no.hvl.dat110.rpcserver;
 import java.math.BigInteger;
 import java.rmi.RemoteException;
 import java.rmi.server.UnicastRemoteObject;
+import java.security.NoSuchAlgorithmException;
 import java.util.HashSet;
 import java.util.Set;
 
@@ -24,7 +25,7 @@ public class Node extends UnicastRemoteObject implements NodeInterface {
 	
 	private static final long serialVersionUID = 1L;
 	
-	public Node(String nodename) throws RemoteException {
+	public Node(String nodename) throws RemoteException, NoSuchAlgorithmException {
 		super();
 		keys = new HashSet<BigInteger>();
 		this.nodename = nodename;									// use a different name as "IP" for single machine simulation

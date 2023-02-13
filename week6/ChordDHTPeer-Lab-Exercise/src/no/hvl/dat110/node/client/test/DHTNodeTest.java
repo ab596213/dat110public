@@ -7,6 +7,7 @@ import static org.junit.jupiter.api.Assertions.*;
 
 import java.math.BigInteger;
 import java.rmi.RemoteException;
+import java.security.NoSuchAlgorithmException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -114,7 +115,7 @@ class DHTNodeTest {
 	}
 
 	@Test
-	void test() throws RemoteException {
+	void test() throws RemoteException, NoSuchAlgorithmException {
 		
 		Map<String, Integer> processes = Util.getProcesses();								// get the processes (nodename, port)
 		List<NodeInterface> nodes = new ArrayList<>();
