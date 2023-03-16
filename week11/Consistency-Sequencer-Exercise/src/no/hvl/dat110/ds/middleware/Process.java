@@ -9,6 +9,7 @@ package no.hvl.dat110.ds.middleware;
 import java.rmi.RemoteException;
 import java.rmi.server.UnicastRemoteObject;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
 import java.util.Map;
@@ -54,8 +55,12 @@ public class Process extends UnicastRemoteObject implements ProcessInterface {
 	
 	
 	private void sortQueue() {
-		// TODO
 		// sort the queue by the clock (unique time stamped given by the sequencer)
+		Comparator <Message> clock = Comparator.comparing(Message::getClock);
+//		Comparator <Message> process = Comparator.comparing(Message::getProcessID);
+//		Comparator <Message> both = clock.thenComparing(process);
+		
+		Collections.sort(queue, clock);
 	}
 	
 	// client initiated method
@@ -66,6 +71,12 @@ public class Process extends UnicastRemoteObject implements ProcessInterface {
 		// set the type of message - interest
 		// set the process ID
 		// set the interest
+		Message message = new Message();	
+		message.setOptype(OperationType.INTEREST);
+		message.setProcessID(processID);
+		message.setInterest(interest); 
+		
+		sendMessageToSequencer(message);
 
 		// send the message to the sequencer by calling the sendMessageToSequencer
 		
@@ -80,6 +91,12 @@ public class Process extends UnicastRemoteObject implements ProcessInterface {
 		// set the type of message - deposit
 		// set the process ID
 		// set the deposit amount
+		Message mess = new Message();
+		mess.setOptype(OperationType.DEPOSIT);
+		mess.setProcessID(processID);
+		mess.setDepositamount(amount);
+		
+		sendMessageToSequencer(mess);
 
 		// send the message to the sequencer
 
@@ -93,6 +110,12 @@ public class Process extends UnicastRemoteObject implements ProcessInterface {
 		// set the type of message - withdrawal
 		// set the process ID
 		// set the withdrawal amount
+		Message mess = new Message();
+		mess.setOptype(OperationType.WITHDRAWAL);
+		mess.setProcessID(processID);
+		mess.setWithdrawamount(amount);
+		
+		sendMessageToSequencer(mess);
 
 		// send the message to the sequencer
 
@@ -102,13 +125,23 @@ public class Process extends UnicastRemoteObject implements ProcessInterface {
 		// TODO
 		
 		// get the port for the sequencer: use Util class
-
 		// get the sequencer stub: use Util class
-		
 		// using the sequencer stub, call the remote onMessageReceived method to send the message to the sequencer
-
+/**
+		replicas.forEach((name, port) -> {
+			ProcessInterface pi = Util.getProcessStub(name, port);
+			
+			try {
+				pi.onMessageReceived(message);
+			} catch (RemoteException e) {
+				e.printStackTrace();
+			}
+			
+		});
+		**/
 	}
 	
+		
 	public void applyOperation() throws RemoteException {
 		// TODO
 		
@@ -117,7 +150,15 @@ public class Process extends UnicastRemoteObject implements ProcessInterface {
 		// for each message in the queue, check the operation type
 		
 		// call the appropriate update method for the operation type and pass the value to be updated
-		
+		for (Message m : queue) {
+
+			if(m.getOptype().equals(OperationType.DEPOSIT)) 
+				updateDeposit(m.getDepositamount());
+			else if(m.getOptype().equals(OperationType.INTEREST)) 
+				updateInterest(m.getInterest());
+			else
+				updateWithdrawal(m.getWithdrawamount());
+		}
 		Util.printClock(this);
 		
 	}
@@ -130,6 +171,14 @@ public class Process extends UnicastRemoteObject implements ProcessInterface {
 			// sort the queue according to time stamped by the sequencer
 			// apply operation and commit
 			// clear the queue
+		queue.add(message);
+		if(queue.size() <= Sequencer.ORDERINGLIMIT) {
+			sortQueue();
+			applyOperation();
+			queue.clear();
+			
+		}
+		
 
 	}
 	

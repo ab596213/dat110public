@@ -12,6 +12,7 @@ import java.rmi.RemoteException;
 import java.rmi.server.UnicastRemoteObject;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.Comparator;
 import java.util.List;
 import java.util.Map;
 
@@ -59,7 +60,12 @@ public class Process extends UnicastRemoteObject implements ProcessInterface {
 	
 	// sort queue first on the clock and then the processID to break any clock tie
 	private void sortQueue() {
-		// implement
+		
+		Comparator <Message> clock = Comparator.comparing(Message::getClock);
+		Comparator <Message> process = Comparator.comparing(Message::getProcessID);
+		Comparator <Message> both = clock.thenComparing(process);
+		
+		Collections.sort(queue, both);
 	}
 	
 	// client initiated method
@@ -82,7 +88,14 @@ public class Process extends UnicastRemoteObject implements ProcessInterface {
 	@Override
 	public void requestDeposit(double amount) throws RemoteException {
 		
-		// implement - use idea from requestInterest()		
+		clock.increment();
+		Message mess = new Message(clock.getClock(), processID);
+		mess.setOptype(OperationType.DEPOSIT);
+		mess.setDepositamount(amount);
+		
+		queue.add(mess);
+		
+		multicastMessage(mess);
 		
 
 	}
@@ -91,8 +104,15 @@ public class Process extends UnicastRemoteObject implements ProcessInterface {
 	@Override
 	public void requestWithdrawal(double amount) throws RemoteException {
 		
-		// implement - use idea from requestInterest()
+		clock.increment();
+		Message mess = new Message(clock.getClock(), processID);
+		mess.setOptype(OperationType.WITHDRAWAL);
+		mess.setWithdrawamount(amount);
 
+		queue.add(mess);
+		
+		multicastMessage(mess);
+		
 	}
 	
 	@Override
@@ -108,15 +128,21 @@ public class Process extends UnicastRemoteObject implements ProcessInterface {
 		// implement
 		
 		// sort the queue
-		
+		sortQueue();
 		// iterate over the queue
-		
 		// for each message in the queue, check if it is acknowledged
-		
+		queue.stream().filter(x -> x.isAcknowledged());
 		// check for the operationtype in the message
-		
 		// call the appropriate update method for the operation type and pass the value
-				
+		for (Message m : queue) {
+			
+			if(m.getOptype().equals(OperationType.DEPOSIT)) 
+				updateDeposit(m.getDepositamount());
+			 else if(m.getOptype().equals(OperationType.INTEREST)) 
+				updateInterest(m.getInterest());
+			 else
+				 updateWithdrawal(m.getWithdrawamount());
+		}
 	}
 	
 	@Override
@@ -127,15 +153,24 @@ public class Process extends UnicastRemoteObject implements ProcessInterface {
 		
 		// implement the remaining
 		
-//		 sort the queue according to timestamp and processID
-		
+		//sort the queue according to timestamp and processID
+		sortQueue();
 		// check the clock of the sending process
-		
 		// get the clock that is higher and update the local clock using clock.adjustClock()
-
+		if(message.getClock() > clock.getClock()) {
+			clock.adjustClock(message.getClock());
+		}
+		
 		// increment the local clock
+		clock.increment();
 		
 		// multicast acknowledgement to other processes including self
+		multicastAcknowledgement(message);
+		
+
+		
+		
+
 
 	}
 	
@@ -148,6 +183,17 @@ public class Process extends UnicastRemoteObject implements ProcessInterface {
 		// for each replica, use Util.getProcessStub to get the replica stub (remote object)
 		
 		// call onAcknowledgementReceived() for each remote replica
+		
+		replicas.forEach((name, port) -> {
+			ProcessInterface pi = Util.getProcessStub(name, port);
+			
+			try {
+				pi.onAcknowledgementReceived(message);
+			} catch (RemoteException e) {
+				e.printStackTrace();
+			}
+			
+		});
 
 	}
 	
@@ -159,8 +205,19 @@ public class Process extends UnicastRemoteObject implements ProcessInterface {
 		// iterate over the replicas
 		
 		// for each replica, use Util.getProcessStub to get the replica stub (remote object)
-				
+		
 		// call onMessageReceived() for each remote replica
+		replicas.forEach((name, port) -> {
+			ProcessInterface pi = Util.getProcessStub(name, port);
+			
+			try {
+				pi.onMessageReceived(message);
+			} catch (RemoteException e) {
+				e.printStackTrace();
+			}
+			
+		});
+		
 
 	}
 	

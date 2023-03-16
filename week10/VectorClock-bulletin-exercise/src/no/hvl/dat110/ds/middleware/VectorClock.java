@@ -35,7 +35,9 @@ public class VectorClock implements Serializable {
 	 */
 	public void updateClockRule1() {
 		
-		// implement
+		vectorclock.set(index, vectorclock.elementAt(index) +1);
+		
+		
 	}
 	
  
@@ -49,6 +51,13 @@ public class VectorClock implements Serializable {
 		// implement
 		// get max{ck, dk}
 		// set the local entry to the max
+		for (int i = 0; i < vectorclock.capacity(); i++) {
+			if(vectorclock.get(i).compareTo(vci.getVectorclock().get(i)) < 0) {
+				vectorclock.set(i, vci.getVectorclock().elementAt(i));
+			}
+		}
+		updateClockRule1();
+		
 	}
 	
 	/**
@@ -64,10 +73,10 @@ public class VectorClock implements Serializable {
 		Vector<Integer> clock_vi = vi.getVectorclock();
 		Vector<Integer> clock_vj = this.getVectorclock();
 		
-		/** condition 1 **/
+		
 		boolean expectedmsg = false;
 		// implement
-		
+	
 		/** condition 2 **/
 		boolean prevmsgsdelivered = true;
 		// implement

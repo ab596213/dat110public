@@ -34,9 +34,18 @@ public class TokenManager extends UnicastRemoteObject implements ProcessInterfac
 	public synchronized void requestToken(ProcessInterface requester) throws RemoteException {
 		// TODO
 		// check that nextid == 0.
+		if(nextid == 0) {
 			// if yes, increment nextid and create a Token object with nextid as parameter
-				// send the token object to the requester by using the calling the onTokenReceived remote method.
+			nextid++;
+			// send the token object to the requester by using the calling the onTokenReceived remote method.
+			Token j = new Token(nextid);
+			requester.onTokenReceived(j);
+		}else {
 			// if no, send null to the requester
+			requester.onTokenReceived(null);
+		}
+				
+			
 	}
 
 	@Override

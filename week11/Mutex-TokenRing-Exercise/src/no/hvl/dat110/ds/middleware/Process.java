@@ -60,15 +60,15 @@ public class Process extends UnicastRemoteObject implements ProcessInterface {
 		// TODO 		
 		
 		// make a new message instance and set the following:
-		
+		Message mess = new Message();
 		// set the type of message - interest (get it from OperationType)
-		
+		mess.setOptype(OperationType.INTEREST);
 		// set the process ID
-		
+		mess.setProcessID(processID);
 		// set the interest
-		
+		mess.setInterest(interest);
 		// add message to queue
-
+		queue.add(mess);
 	}
 	
 	// client initiated method
@@ -78,15 +78,16 @@ public class Process extends UnicastRemoteObject implements ProcessInterface {
 		// TODO 		
 		
 		// make a new message instance and set the following
-		
+		Message mess = new Message();
 		// set the type of message - deposit (get it from OperationType)
-		
+		mess.setOptype(OperationType.DEPOSIT);
 		// set the process ID
-		
+		mess.setProcessID(processID);
 		// set the deposit amount
-		
+		mess.setDepositamount(amount);
 		// add message to queue
-
+		queue.add(mess);
+		
 	}
 	
 	// client initiated method
@@ -96,15 +97,15 @@ public class Process extends UnicastRemoteObject implements ProcessInterface {
 		// TODO 	
 		
 		// make a new message instance and set the following
-		
+		Message mess = new Message();
 		// set the type of message - withdrawal
-		
+		mess.setOptype(OperationType.WITHDRAWAL);
 		// set the process ID
-		
+		mess.setProcessID(processID);
 		// set the withdrawal amount
-		
+		mess.setWithdrawamount(amount);
 		// add message to queue
-
+		queue.add(mess);
 	}	
 
 	@Override
@@ -113,7 +114,6 @@ public class Process extends UnicastRemoteObject implements ProcessInterface {
 		// TODO
 		
 		// create a new token object and pass the old token's Id as its parameter
-		
 		Token token_new = new Token(token.getTokenId());
 		
 		// set the old token to null
@@ -139,6 +139,23 @@ public class Process extends UnicastRemoteObject implements ProcessInterface {
 		// for each message in the queue, check the operation type
 		
 		// call the appropriate update method for the operation type and pass the value to be updated
+		 for (Message m : queue) {
+	            
+	            switch(m.getOptype()) {
+	                
+	                case INTEREST:
+	                    updateInterest(m.getInterest());
+	                    break;
+	                    
+	                case DEPOSIT:
+	                    updateDeposit(m.getDepositamount());
+	                    break;
+	                    
+	                case WITHDRAWAL:
+	                    updateWithdrawal(m.getWithdrawamount());
+	                    break;
+	            }
+	        }
 
 		Util.printQueue(this);
 		// clear the queue
@@ -163,18 +180,21 @@ public class Process extends UnicastRemoteObject implements ProcessInterface {
 
 	@Override
 	public void onTokenReceived(Token token) throws RemoteException {
-		
+
 		// TODO
-		
+
 		// check whether token is null
-		
-		// if no, set the token object to the received token
-		
-		// call applyOperation method
-		
-		// forward the token to the successor process by calling the forwardToken method
+		if (token != null) {
+			// if no, set the token object to the received token
+			this.token = token;
+			// call applyOperation method
+			applyOperation();
+			// forward the token to the successor process by calling the forwardToken method
+			forwardToken();
+		}
 
 	}
+
 
 	/**
 	 * Give this job to a different thread

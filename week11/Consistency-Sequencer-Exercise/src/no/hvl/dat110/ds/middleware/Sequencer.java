@@ -18,6 +18,7 @@ import no.hvl.dat110.ds.util.Util;
  * plus using a bounded ordering deviation to initiate when updates should be performed.
  *
  */
+
 public class Sequencer extends UnicastRemoteObject implements ProcessInterface {
 
 	/**
@@ -53,8 +54,9 @@ public class Sequencer extends UnicastRemoteObject implements ProcessInterface {
 		if(queue.size() >= ORDERINGLIMIT) {
 			
 			// sendQueueMessagesToReplicas()
-			
+			sendQueueMessagesToReplicas();
 			// reset the queue
+			queue.clear();
 		}
 		// and reset nextid
 		nextid = 0;
@@ -67,8 +69,20 @@ public class Sequencer extends UnicastRemoteObject implements ProcessInterface {
 			// get the port for each process
 			// get the process stub: use Util
 			// using the stub, call the onReceivedMessage remote method and forward all the messages in the queue to this remote process
-		
-		// clear the queue when done
+		replicas.forEach((name, port) -> {
+			ProcessInterface pi = Util.getProcessStub(name, port);
+
+			queue.forEach(x -> {
+				try {
+					pi.onMessageReceived(x);
+				} catch (RemoteException e) {
+					// TODO Auto-generated catch block
+					e.printStackTrace();
+				}
+			});
+
+		});
+		queue.clear();
 		
 	}
 
