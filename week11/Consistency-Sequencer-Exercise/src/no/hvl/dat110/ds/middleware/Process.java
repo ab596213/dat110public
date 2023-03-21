@@ -127,6 +127,9 @@ public class Process extends UnicastRemoteObject implements ProcessInterface {
 		// get the port for the sequencer: use Util class
 		// get the sequencer stub: use Util class
 		// using the sequencer stub, call the remote onMessageReceived method to send the message to the sequencer
+		int port = Config.PORT4;
+		ProcessInterface pi = Util.getProcessStub("sequencer", port);
+		pi.onMessageReceived(message);
 /**
 		replicas.forEach((name, port) -> {
 			ProcessInterface pi = Util.getProcessStub(name, port);
