@@ -47,22 +47,46 @@ public class Sequencer extends UnicastRemoteObject implements ProcessInterface {
 	public void onMessageReceived(Message message) throws RemoteException {
 		// TODO
 		// increment nextid (time stamp)
+		nextid++;
+		
 		// set the nextid as the clock for the message: use setClock
-		// add the message to the queue			
+		message.setClock(nextid);
+		// add the message to the queue
+		queue.add(message);
 		// check if the ordering limit has been reached. If yes, multicast queue messages to all the replicas by calling the sendQueueMessagesToReplicas 
+		if(queue.size() >= ORDERINGLIMIT) {
+			
+			// sendQueueMessagesToReplicas()
+			sendQueueMessagesToReplicas();
+			// reset the queue
+			queue.clear();
+		}
 		// and reset nextid
+		nextid = 0;
 
 	}
 	
 	private void sendQueueMessagesToReplicas() throws RemoteException {
 		// TODO
 		// iterate over each replica, 
-			// get the port for each process
-			// get the process stub: use Util
-			// using the stub, call the onReceivedMessage remote method and forward all the messages in the queue to this remote process
-		
-		// clear the queue when done
-		
+		// get the port for each process
+		// get the process stub: use Util
+		// using the stub, call the onReceivedMessage remote method and forward all the messages in the queue to this remote process
+		replicas.forEach((name, port) -> {
+			ProcessInterface pi = (ProcessInterface) Util.getProcessStub(name, port);
+
+			queue.forEach(x -> {
+				try {
+					pi.onMessageReceived(x);
+				} catch (RemoteException e) {
+					// TODO Auto-generated catch block
+					e.printStackTrace();
+				}
+			});
+
+		});
+		queue.clear();
+
 	}
 
 	@Override

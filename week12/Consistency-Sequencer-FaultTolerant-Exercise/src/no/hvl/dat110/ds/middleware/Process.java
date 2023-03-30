@@ -9,6 +9,7 @@ package no.hvl.dat110.ds.middleware;
 import java.rmi.RemoteException;
 import java.rmi.server.UnicastRemoteObject;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
 import java.util.Map;
@@ -55,6 +56,8 @@ public class Process extends UnicastRemoteObject implements ProcessInterface {
 	private void sortQueue() {
 		// TODO
 		// sort the queue by the clock (unique time stamped given by the sequencer)
+		Comparator <Message> clock = Comparator.comparing(Message::getClock);
+		Collections.sort(queue, clock);
 	}
 	
 	// client initiated method
@@ -65,7 +68,12 @@ public class Process extends UnicastRemoteObject implements ProcessInterface {
 		// set the type of message - interest
 		// set the process ID
 		// set the interest
-
+		Message message = new Message();	
+		message.setOptype(OperationType.INTEREST);
+		message.setProcessID(processID);
+		message.setInterest(interest); 
+		
+		sendMessageToSequencer(message);
 		// send the message to the sequencer by calling the sendMessageToSequencer
 		
 
@@ -79,7 +87,12 @@ public class Process extends UnicastRemoteObject implements ProcessInterface {
 		// set the type of message - deposit
 		// set the process ID
 		// set the deposit amount
-
+		Message mess = new Message();
+		mess.setOptype(OperationType.DEPOSIT);
+		mess.setProcessID(processID);
+		mess.setDepositamount(amount);
+		
+		sendMessageToSequencer(mess);
 		// send the message to the sequencer
 
 	}
@@ -92,7 +105,12 @@ public class Process extends UnicastRemoteObject implements ProcessInterface {
 		// set the type of message - withdrawal
 		// set the process ID
 		// set the withdrawal amount
-
+		Message mess = new Message();
+		mess.setOptype(OperationType.WITHDRAWAL);
+		mess.setProcessID(processID);
+		mess.setWithdrawamount(amount);
+		
+		sendMessageToSequencer(mess);
 		// send the message to the sequencer
 
 	}
@@ -104,32 +122,56 @@ public class Process extends UnicastRemoteObject implements ProcessInterface {
 		// using the sequencer stub, call the remote onReceivedMessage method to send the message to the sequencer
 		// use a try-catch on the above (onReceivedMessage) to detect/catch NullPointerException
 		// in the catch clause, print the message "can't contact the sequencer" to the console
+		int port = replicas.get(Sequencer.SEQUENCER);
+		ProcessInterface pi = (ProcessInterface) Util.getProcessStub(Sequencer.SEQUENCER, port);
+		try {
+			onMessageReceived(message);
+		} catch(RemoteException e) {
+			System.out.println("can't contact the sequencer");
+		}
+		
 	}
 	
 	public void applyOperation() throws RemoteException {
 		// TODO
-		
+
 		// iterate over the queue
-		
+
 		// for each message in the queue, check the operation type
-		
+
 		// call the appropriate update method for the operation type and pass the value to be updated
-		
+		for (Message m : queue) {
+
+			if(m.getOptype().equals(OperationType.DEPOSIT)) 
+				updateDeposit(m.getDepositamount());
+			else if(m.getOptype().equals(OperationType.INTEREST)) 
+				updateInterest(m.getInterest());
+			else
+				updateWithdrawal(m.getWithdrawamount());
+		}
 		Util.printClock(this);
-		
+
 	}
-	
+
 	@Override
 	public void onMessageReceived(Message message) throws RemoteException {
 		// TODO
 		// upon receipt of a message, add message to the queue	
 		// check the ordering limit, if equal to queue size, start to process the following:
-			// sort the queue according to time stamped by the sequencer
-			// apply operation and commit
-			// clear the queue
+		// sort the queue according to time stamped by the sequencer
+		// apply operation and commit
+		// clear the queue
+		queue.add(message);
+		if(queue.size() <= Sequencer.ORDERINGLIMIT) {
+			sortQueue();
+			applyOperation();
+			queue.clear();
+
+		}
+
 
 	}
-	
+
 	@Override
 	public double getBalance() throws RemoteException {
 		return balance;
